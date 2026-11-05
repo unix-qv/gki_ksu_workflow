@@ -276,26 +276,38 @@ jobs:
           mkdir -p commit_info
           echo "$KSU_VERSION" > commit_info/driver_version
           export KSU_VERSION
-          case "${{ inputs.variant }}" in
-            MidoriSU-KX) SPEC="${{ inputs.midorisu_kx_branch }}" ;;
-            MidoriSU-NX) SPEC="${{ inputs.midorisu_nx_branch }}" ;;
-            MidoriSU-OX) SPEC="${{ inputs.midorisu_ox_branch }}" ;;
-            MidoriSU-RX) SPEC="${{ inputs.midorisu_rx_branch }}" ;;
-            MidoriSU-XX) SPEC="${{ inputs.midorisu_xx_branch }}" ;;
-          esac
-          IFS=':' read -r REPO BRANCH <<< "$SPEC"
-          echo "REPO=$REPO" >> $GITHUB_ENV
-          git clone --branch "${BRANCH}" "https://github.com/${REPO}.git" KernelSU
-          bash "${{ github.workspace }}/.github/scripts/setup_ksu.sh"
-          ln -sf ../KernelSU/kernel drivers/kernelsu
-          grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
-          grep -q "drivers/kernelsu/Kconfig" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+          if [ "${{ inputs.variant }}" = "FinaSU" ]; then
+            echo "[+] Setting up FinaSU..."
+            git clone --branch master "https://github.com/LyraVoid/FinaSU.git" KernelSU
+            ln -sf ../KernelSU/kernel drivers/kernelsu
+            grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
+            grep -q "drivers/kernelsu/Kconfig" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+            echo "REPO=LyraVoid/FinaSU" >> $GITHUB_ENV
+          else
+            case "${{ inputs.variant }}" in
+              MidoriSU-KX) SPEC="${{ inputs.midorisu_kx_branch }}" ;;
+              MidoriSU-NX) SPEC="${{ inputs.midorisu_nx_branch }}" ;;
+              MidoriSU-OX) SPEC="${{ inputs.midorisu_ox_branch }}" ;;
+              MidoriSU-RX) SPEC="${{ inputs.midorisu_rx_branch }}" ;;
+              MidoriSU-XX) SPEC="${{ inputs.midorisu_xx_branch }}" ;;
+            esac
+            IFS=':' read -r REPO BRANCH <<< "$SPEC"
+            echo "REPO=$REPO" >> $GITHUB_ENV
+            git clone --branch "${BRANCH}" "https://github.com/${REPO}.git" KernelSU
+            bash "${{ github.workspace }}/.github/scripts/setup_ksu.sh"
+            ln -sf ../KernelSU/kernel drivers/kernelsu
+            grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
+            grep -q "drivers/kernelsu/Kconfig" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+          fi
 
       - name: Setup Extra Features and Fixes
         if: inputs.use_extra_features
         working-directory: kernel_workspace/common
         run: |
           case "${{ inputs.variant }}" in
+            FinaSU)
+              echo "[+] FinaSU extra features already included"
+              ;;
             MidoriSU-KX)
               patch -p1 -d KernelSU < <(curl -sSfL "https://github.com/midori01/KernelSU/commit/kow~2.patch")
               patch -p1 -d KernelSU < <(curl -sSfL "https://github.com/midori01/KernelSU/commit/kow~1.patch")
@@ -345,6 +357,9 @@ jobs:
           echo "[+] SUSFS patch: 50_add_susfs_in_gki-${PATCH_VER}.patch"
           bash "$DEINLINED_SCRIPT" "$PATCH_DIR/50_add_susfs_in_gki-${PATCH_VER}.patch" && patch -p1 < deinlined.patch
           case "${{ inputs.variant }}" in
+            FinaSU)
+              echo "[+] FinaSU extra features already included"
+              ;;
             MidoriSU-KX)
               patch -p1 -d KernelSU < <(curl -sSfL "https://github.com/midori01/KernelSU/commit/kow.patch")
               ;;
@@ -585,6 +600,12 @@ jobs:
             fi
           }
           case "${{ inputs.variant }}" in
+            FinaSU)
+              save_ksu_commit finasu
+              echo "LyraVoid" > "$COMMIT_DIR/finasu_ksu_author"
+              echo "LyraVoid/FinaSU" > "$COMMIT_DIR/finasu_ksu_repo"
+              save_susfs_commit
+              ;;
             MidoriSU-KX)
               save_ksu_commit midorisu_kx
               echo "${{ inputs.midorisu_kx_branch }}" | cut -d: -f1 | cut -d/ -f1 > "$COMMIT_DIR/midorisu_kx_ksu_author"

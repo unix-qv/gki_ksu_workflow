@@ -25,9 +25,10 @@ on:
       ksu_variant:
         description: 'KernelSU Variant'
         required: true
-        default: 'all'
+        default: 'FinaSU'
         type: choice
         options:
+          - FinaSU
           - all
           - MidoriSU-KX
           - MidoriSU-NX
@@ -288,6 +289,7 @@ jobs:
                 matrix=$(echo "$matrix" | jq -c --arg kv "$kv" --arg sub_level "$sub_level" --arg variant "$v" --argjson ds "$ds" --argjson sus "$sus" '.include += [{"kernel_version":$kv,"sub_level":$sub_level,"variant":$variant,"droidspaces":$ds,"susfs":$sus}]')
               }
 
+              [[ "$variant" =~ ^(all|FinaSU)$ ]] && add_variant FinaSU true
               [[ "$variant" =~ ^(all|MidoriSU-KX)$ ]] && add_variant MidoriSU-KX true
               [[ "$variant" =~ ^(all|MidoriSU-NX)$ ]] && add_variant MidoriSU-NX true
               [[ "$variant" =~ ^(all|MidoriSU-OX)$ ]] && add_variant MidoriSU-OX true
@@ -535,6 +537,7 @@ jobs:
           ksu_line MidoriSU-NX "$(cat commit_info/midorisu_nx_ksu_repo 2>/dev/null)" commit_info/midorisu_nx_ksu_commit
           ksu_line MidoriSU-OX "$(cat commit_info/midorisu_ox_ksu_repo 2>/dev/null)" commit_info/midorisu_ox_ksu_commit
           ksu_line MidoriSU-RX "$(cat commit_info/midorisu_rx_ksu_repo 2>/dev/null)" commit_info/midorisu_rx_ksu_commit
+          ksu_line FinaSU "$(cat commit_info/finasu_ksu_repo 2>/dev/null)" commit_info/finasu_ksu_commit
           ksu_line MidoriSU-XX "$(cat commit_info/midorisu_xx_ksu_repo 2>/dev/null)" commit_info/midorisu_xx_ksu_commit
 
       - name: Publish Release
@@ -545,6 +548,7 @@ jobs:
           make_latest: ${{ matrix.kv == '6.12' || !contains(needs.setup.outputs.kernel_versions, ',') }}
           body: |
             ${{ env.KERNEL_SOURCE_INFO }}
+            ${{ steps.ksu_info.outputs.finasu }}
             ${{ steps.ksu_info.outputs.midorisu-kx }}
             ${{ steps.ksu_info.outputs.midorisu-nx }}
             ${{ steps.ksu_info.outputs.midorisu-ox }}

@@ -115,6 +115,17 @@ runs:
         EOF
         
         case "${{ inputs.variant }}" in
+          FinaSU)
+            cat >> $DEFCONFIG <<-'EOF'
+        CONFIG_KSU=y
+        EOF
+            if [ "${{ inputs.enable_susfs }}" = "true" ]; then
+              cat >> $DEFCONFIG <<-'EOF'
+        CONFIG_KSU_SUSFS=y
+        CONFIG_KSU_HOOK_SUSFS_INLINE=y
+        EOF
+            fi
+            ;;
           MidoriSU-XX)
             case "${{ inputs.midorisu_xx_hook_mode }}" in
               manual)
