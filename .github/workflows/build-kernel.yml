@@ -282,6 +282,8 @@ jobs:
             ln -sf ../KernelSU/kernel drivers/kernelsu
             grep -q "kernelsu" drivers/Makefile || echo 'obj-$(CONFIG_KSU) += kernelsu/' >> drivers/Makefile
             grep -q "drivers/kernelsu/Kconfig" drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+            sed -i 's/KSU_EXPECTED_SIZE := 0x033b/KSU_EXPECTED_SIZE := 0x2cc/' drivers/kernelsu/Kbuild
+            sed -i 's/KSU_EXPECTED_HASH := c371061b19d8c7d7d6133c6a9bafe198fa944e50c1b31c9d8daa8d7f1fc2d2d6/KSU_EXPECTED_HASH := 2d89b50aaf1db013c2b6738f973f48b62ea21a3a8d7216bfec3521065d448458/' drivers/kernelsu/Kbuild
             echo "REPO=LyraVoid/FinaSU" >> $GITHUB_ENV
           else
             case "${{ inputs.variant }}" in
