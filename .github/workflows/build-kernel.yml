@@ -212,7 +212,7 @@ jobs:
       - name: Download Toolchains & Kernel Source
         run: |
           mkdir -p kernel_workspace && cd kernel_workspace
-        MIDORI_MIRROR="https://github.com/midori01/gki_ksu_workflow/releases/download/${{ steps.cfg.outputs.mirror_tag }}"
+          MIDORI_MIRROR="https://github.com/midori01/gki_ksu_workflow/releases/download/${{ steps.cfg.outputs.mirror_tag }}"
           CLANG_TAR="clang-${{ steps.cfg.outputs.clang_version }}.tar.gz"
           case "${{ steps.cfg.outputs.asb_date }}" in
             lts)
@@ -715,5 +715,5 @@ jobs:
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v7
         with:
-          name: Kernel-${{ inputs.kernel_version }}-${{ inputs.sub_level }}-${{ inputs.variant }}${{ env.SUSFS_SUFFIX }}${{ env.DS_SUFFIX }}${{ env.ADIOS_SUFFIX }}${{ env.ZRAM_SUFFIX }}${{ env.NM_SUFFIX }}${{ steps.cfg.outputs.r_suffix }}
+          name: Kernel-${{ inputs.kernel_version }}-${{ inputs.sub_level }}-${{ inputs.variant }}${{ env.SUSFS_SUFFIX }}${{ env.DS_SUFFIX }}${{ env.ADIOS_SUFFIX }}${{ env.ZRAM_SUFFIX }}${{ env.NM_SUFFIX }}
           path: kernel_workspace/${{ env.ZIP_NAME }}
